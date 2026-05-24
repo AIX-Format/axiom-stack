@@ -7,6 +7,7 @@
   },
   "regions": ["iad1"],
   "framework": "nextjs",
+  "nodeVersion": "22.x",
   "buildCommand": "(test -n \"$DATABASE_URL\" && prisma migrate deploy) || true; npm run build",
   "installCommand": "cd ../.. && pnpm install",
   "outputDirectory": ".next",
