@@ -8,7 +8,7 @@
   "regions": ["iad1"],
   "framework": "nextjs",
   "buildCommand": "(test -n \"$DATABASE_URL\" && prisma migrate deploy) || true; npm run build",
-  "installCommand": "cd ../.. && echo 'PWD:' && pwd && echo 'NODE:' && node -v && echo 'FILES:' && ls -la pnpm-workspace.yaml .node-version package.json 2>&1 && pnpm install",
+  "installCommand": "cd ../.. && pnpm install",
   "outputDirectory": ".next",
   "cleanUrls": true,
   "trailingSlash": false,
