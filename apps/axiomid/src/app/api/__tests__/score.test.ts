@@ -1,9 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-// Mock next/server
-vi.mock('next/server', () => ({
+jest.mock('next/server', () => ({
   NextResponse: {
-    json: vi.fn((body, init) => ({
+    json: jest.fn((body, init) => ({
       status: init?.status || 200,
       json: async () => body,
     })),

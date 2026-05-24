@@ -1,26 +1,24 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { prisma } from '@/lib/prisma';
 import { ACTIONS } from '@/lib/actions';
 
-// Mock next/server
-vi.mock('next/server', () => ({
+jest.mock('next/server', () => ({
   NextResponse: {
-    json: vi.fn((body, init) => ({
+    json: jest.fn((body, init) => ({
       status: init?.status || 200,
       json: async () => body,
     })),
   },
 }));
 
-// Mock prisma
-vi.mock('@/lib/prisma', () => ({
+jest.mock('@/lib/prisma', () => ({
   prisma: {
     user: {
-      findUnique: vi.fn(),
-      update: vi.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
     },
     action: {
-      create: vi.fn(),
+      create: jest.fn(),
+      findFirst: jest.fn(),
     },
   },
 }));
@@ -31,7 +29,7 @@ describe('POST /api/action/claim', () => {
   const mockWalletAddress = '0x1234567890123456789012345678901234567890';
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('should return 400 if parameters are missing', async () => {
@@ -74,9 +72,11 @@ describe('POST /api/action/claim', () => {
 
   it('should return 400 if non-repeatable action already claimed', async () => {
     (prisma.user.findUnique as any).mockResolvedValue({
+      id: 'user-1',
       walletAddress: mockWalletAddress,
       actions: [{ type: 'connect_twitter' }],
     });
+    (prisma.action.findFirst as any).mockResolvedValueOnce({ type: 'connect_twitter', userId: 'user-1' });
 
     const req = {
       json: async () => ({ walletAddress: mockWalletAddress, actionType: 'connect_twitter' }),
@@ -92,9 +92,11 @@ describe('POST /api/action/claim', () => {
   it('should enforce 24h cooldown for daily_pow', async () => {
     const recentDate = new Date(Date.now() - 1000).toISOString();
     (prisma.user.findUnique as any).mockResolvedValue({
+      id: 'user-1',
       walletAddress: mockWalletAddress,
       actions: [{ type: 'daily_pow', timestamp: recentDate }],
     });
+    (prisma.action.findFirst as any).mockResolvedValueOnce({ type: 'daily_pow', userId: 'user-1', timestamp: recentDate });
 
     const req = {
       json: async () => ({ walletAddress: mockWalletAddress, actionType: 'daily_pow' }),

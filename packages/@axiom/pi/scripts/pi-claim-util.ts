@@ -6,7 +6,7 @@
  *   AIX_PRIVATE_KEY=... npx tsx pi-claim-util.ts --domain axiomid.app --id iqra-sovereign
  */
 
-import { AxiomPi } from '../packages/pi-kyc/src/index';
+import { AxiomPi } from '../src/index';
 import fs from 'fs';
 import path from 'path';
 

@@ -1,21 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { prisma } from '@/lib/prisma';
 
-// Mock next/server
-vi.mock('next/server', () => ({
+jest.mock('next/server', () => ({
   NextResponse: {
-    json: vi.fn((body, init) => ({
+    json: jest.fn((body, init) => ({
       status: init?.status || 200,
       json: async () => body,
     })),
   },
 }));
 
-// Mock prisma
-vi.mock('@/lib/prisma', () => ({
+jest.mock('@/lib/prisma', () => ({
   prisma: {
     user: {
-      findUnique: vi.fn(),
+      findUnique: jest.fn(),
     },
   },
 }));
@@ -26,7 +23,7 @@ describe('GET /api/user/status', () => {
   const mockWalletAddress = '0x1234567890123456789012345678901234567890';
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('should return 400 if walletAddress is missing', async () => {

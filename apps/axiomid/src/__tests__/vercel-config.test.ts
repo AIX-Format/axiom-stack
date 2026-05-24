@@ -37,12 +37,12 @@ describe("vercel.json — top-level settings", () => {
     expect(vercelConfig.framework).toBe("nextjs");
   });
 
-  it("builds with npm run build", () => {
-    expect(vercelConfig.buildCommand).toBe("npm run build");
+  it("builds with prisma migrate + npm run build", () => {
+    expect(vercelConfig.buildCommand).toContain("npm run build");
   });
 
-  it("installs with npm ci", () => {
-    expect(vercelConfig.installCommand).toBe("npm ci");
+  it("installs with pnpm from monorepo root", () => {
+    expect(vercelConfig.installCommand).toContain("pnpm install");
   });
 
   it("outputs to .next directory", () => {
@@ -79,8 +79,10 @@ describe("vercel.json — global security headers on /(.*)", () => {
     expect(findHeader(globalRule, "X-Content-Type-Options")).toBe("nosniff");
   });
 
-  it("sets X-Frame-Options to DENY", () => {
-    expect(findHeader(globalRule, "X-Frame-Options")).toBe("DENY");
+  it("sets Content-Security-Policy with frame-ancestors for Pi sandbox", () => {
+    const csp = findHeader(globalRule, "Content-Security-Policy");
+    expect(csp).toContain("frame-ancestors");
+    expect(csp).toContain("sandbox.minepi.com");
   });
 
   it("sets Referrer-Policy to strict-origin-when-cross-origin", () => {

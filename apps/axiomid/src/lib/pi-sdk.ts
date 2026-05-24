@@ -141,9 +141,9 @@ export function ensurePiSdk(sandbox?: boolean): Promise<void> {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("Not in browser"));
   }
-  patchPostMessageForSandbox();
 
   if (sandbox) {
+    patchPostMessageForSandbox();
     // If sandbox mode is requested, check if the pre-existing script tag has data-sandbox="true".
     // If it doesn't, it was loaded in production mode by the parent window. We must remove it
     // and delete window.Pi to force a clean sandbox-mode script reload.

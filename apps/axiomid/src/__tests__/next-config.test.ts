@@ -40,6 +40,6 @@ describe("next.config — image optimisation", () => {
 
 describe("next.config — experimental features", () => {
   it("enables typedRoutes", () => {
-    expect(nextConfig.experimental?.typedRoutes).toBe(true);
+    expect(nextConfig.typedRoutes).toBe(true);
   });
 });

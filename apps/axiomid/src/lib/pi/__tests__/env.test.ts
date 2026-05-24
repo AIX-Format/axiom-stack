@@ -74,8 +74,9 @@ describe("getPiEnv", () => {
     expect(() => getPiEnv()).toThrow(/\[axiomid:pi\]/);
   });
 
-  it("error message includes actionable guidance about .env.local", () => {
-    expect(() => getPiEnv()).toThrow(/\.env\.local/);
+  it("error message includes the env var name and namespace", () => {
+    expect(() => getPiEnv()).toThrow(/PI_API_KEY/);
+    expect(() => getPiEnv()).toThrow(/\[axiomid:pi\]/);
   });
 
   it("treats NEXT_PUBLIC_PI_SANDBOX='false' as false (not just absence)", () => {

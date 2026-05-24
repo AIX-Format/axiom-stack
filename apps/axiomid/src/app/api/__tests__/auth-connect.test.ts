@@ -1,31 +1,27 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { prisma } from '@/lib/prisma';
 import { calculateTier } from '@/lib/tiers';
 
-// Mock next/server
-vi.mock('next/server', () => ({
+jest.mock('next/server', () => ({
   NextResponse: {
-    json: vi.fn((body, init) => ({
+    json: jest.fn((body, init) => ({
       status: init?.status || 200,
       json: async () => body,
     })),
   },
 }));
 
-// Mock prisma
-vi.mock('@/lib/prisma', () => ({
+jest.mock('@/lib/prisma', () => ({
   prisma: {
     user: {
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
     },
   },
 }));
 
-// Mock tiers
-vi.mock('@/lib/tiers', () => ({
-  calculateTier: vi.fn(),
+jest.mock('@/lib/tiers', () => ({
+  calculateTier: jest.fn(),
 }));
 
 import { POST } from '../auth/connect/route';
@@ -34,7 +30,7 @@ describe('POST /api/auth/connect', () => {
   const mockWalletAddress = '0x1234567890123456789012345678901234567890';
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('should return 400 if walletAddress is missing', async () => {
@@ -74,7 +70,7 @@ describe('POST /api/auth/connect', () => {
     const existingUser = {
       walletAddress: mockWalletAddress,
       xp: 150,
-      tier: 'Ghost', // Outdated tier
+      tier: 'Ghost',
       actions: [],
     };
 
