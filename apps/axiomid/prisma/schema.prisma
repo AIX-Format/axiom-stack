@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  walletAddress String   @unique
+  piUsername    String?
+  xp            Int      @default(0)
+  tier          String   @default("Registered")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  actions       Action[]
+  vaults        Vault[]
+  integrations  Integration[]
+  agent         UserAgent?
+}
+
+model UserAgent {
+  id          String    @id @default(uuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id])
+  publicId    String    @unique @default(cuid()) // ag_xxx — used across products
+  name        String    @default("My Agent")
+  status      String    @default("inactive") // inactive | active | paused
+  apiKeyHash  String?
+  permissions String?   // JSON — e.g. ["claim", "vault", "verify"]
+  lastActive  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Action {
+  id        String   @id @default(uuid())
+  type      String   // e.g., 'connect_twitter', 'verify_identity'
+  xp        Int
+  timestamp DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, type], name: "user_action_unique")
+}
+
+model Vault {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  amount      Float
+  currency    String   @default("USDC")
+  lockDate    DateTime @default(now())
+  unlockDate  DateTime
+  status      String   @default("LOCKED") // LOCKED, UNLOCKED, SLASHED
+  createdAt   DateTime @default(now())
+}
+
+model Integration {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  provider    String   // e.g., 'gitcoin_passport', 'world_id', 'bright_id'
+  score       Float?   // e.g., Gitcoin score
+  metadata    String?  // JSON string for extra data
+  verifiedAt  DateTime @default(now())
+
+  @@unique([userId, provider])
+}

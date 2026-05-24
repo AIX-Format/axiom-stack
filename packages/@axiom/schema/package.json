@@ -1,0 +1,7 @@
+{
+  "name": "@axiom/schema",
+  "version": "0.369.0",
+  "description": "Axiom Sovereign Stack canonical JSON Schema (aix.schema.json)",
+  "main": "aix.schema.json",
+  "license": "Apache-2.0"
+}

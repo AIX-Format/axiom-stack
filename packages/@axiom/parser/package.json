@@ -1,0 +1,17 @@
+{
+  "name": "@axiom/parser",
+  "version": "0.369.0",
+  "description": "AIX parser, canonicalizer, validation engine, and ABOM scanner",
+  "type": "module",
+  "main": "parser.js",
+  "exports": {
+    ".": "./parser.js",
+    "./canonicalize": "./canonicalize.js",
+    "./validation-engine": "./validation-engine.js",
+    "./abom-scanner": "./abom-scanner.js"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "js-yaml": "^4.1.1"
+  }
+}

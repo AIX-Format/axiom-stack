@@ -1,0 +1,11 @@
+{
+  "name": "@axiom/payment",
+  "version": "1.0.0",
+  "description": "Multi-rail payment router for autonomous agents (x402, Stripe, PayPal)",
+  "type": "module",
+  "main": "agent_payment_router.js",
+  "license": "Apache-2.0",
+  "optionalDependencies": {
+    "stripe": "^17.0.0"
+  }
+}
