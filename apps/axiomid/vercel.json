@@ -5,6 +5,7 @@
     "enabled": true,
     "silent": false
   },
+  "rootDirectory": "apps/axiomid",
   "regions": ["iad1"],
   "framework": "nextjs",
   "buildCommand": "(test -n \"$DATABASE_URL\" && prisma migrate deploy) || true; npm run build",

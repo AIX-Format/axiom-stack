@@ -122,12 +122,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           : ["username", "payments", "wallet_address"];
         debug("scopes requested:", scopes);
         const auth = (await withTimeout(
-          pi.authenticate(
-            scopes,
-            (payment: any) => {
+          pi.authenticate({
+            scope: scopes,
+            onIncompletePaymentFound: (payment: any) => {
               console.warn("Incomplete payment:", payment?.identifier);
             }
-          ),
+          }),
           AUTH_TIMEOUT_MS
         )) as any;
         debug("Pi.authenticate done", { uid: auth?.user?.uid, username: auth?.user?.username });

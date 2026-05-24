@@ -7,14 +7,14 @@
 // so the test never depends on Next.js internals.
 jest.mock("server-only", () => ({}));
 
-import { getPiEnv, __resetPiEnvCacheForTests } from "../env";
+import { getPiEnv, __resetPiEnvCache } from "../env";
 
 const ORIGINAL_ENV = process.env;
 
 describe("getPiEnv", () => {
   beforeEach(() => {
     jest.resetModules();
-    __resetPiEnvCacheForTests();
+    __resetPiEnvCache();
     process.env = { ...ORIGINAL_ENV };
     delete process.env.PI_API_KEY;
     delete process.env.PI_WALLET_PRIVATE_SEED;
@@ -96,12 +96,12 @@ describe("getPiEnv", () => {
     expect(getPiEnv().sandbox).toBe(false);
   });
 
-  it("__resetPiEnvCacheForTests allows a second call to pick up updated env vars", () => {
+  it("__resetPiEnvCache allows a second call to pick up updated env vars", () => {
     process.env.PI_API_KEY = "first-key";
     const first = getPiEnv();
     expect(first.apiKey).toBe("first-key");
 
-    __resetPiEnvCacheForTests();
+    __resetPiEnvCache();
 
     process.env.PI_API_KEY = "second-key";
     const second = getPiEnv();

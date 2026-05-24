@@ -1,11 +1,6 @@
+import path from "path";
 import type { NextConfig } from "next";
 
-/**
- * Next.js config for the L0 authority surface (axiomid.app).
- *
- * Production headers and caching policies live in `vercel.json`; this file
- * only carries the build-time toggles Next.js itself owns.
- */
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
@@ -14,6 +9,9 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
   },
   typedRoutes: true,
+  turbopack: {
+    root: path.resolve("../../"),
+  },
 };
 
 export default nextConfig;

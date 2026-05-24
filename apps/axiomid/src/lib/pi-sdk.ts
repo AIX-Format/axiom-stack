@@ -127,9 +127,8 @@ async function loadFromCdnWithRetry(sandbox?: boolean): Promise<void> {
     if ((window as any)?.Pi?.authenticate) {
       try {
         (window as any).Pi.init({ version: "2.0", sandbox: !!sandbox });
-        console.log("[Pi SDK] Initialized from CDN with sandbox =", !!sandbox);
-      } catch (err) {
-        console.warn("[Pi SDK] CDN load init warning/error:", err);
+      } catch {
+        // init may already have been called; safe to ignore
       }
       return;
     }
@@ -167,9 +166,8 @@ export function ensurePiSdk(sandbox?: boolean): Promise<void> {
   if ((window as any)?.Pi?.authenticate) {
     try {
       (window as any).Pi.init({ version: "2.0", sandbox: !!sandbox });
-      console.log("[Pi SDK] Initialized (pre-existing) with sandbox =", !!sandbox);
-    } catch (err) {
-      console.warn("[Pi SDK] Pre-existing init warning/error:", err);
+    } catch {
+      // init may already have been called; safe to ignore
     }
     return Promise.resolve();
   }

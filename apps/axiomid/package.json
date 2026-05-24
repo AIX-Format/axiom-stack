@@ -15,10 +15,10 @@
   "homepage": "https://axiomid.app",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Moeabdelaziz007/axiomid-project.git"
+    "url": "https://github.com/AIX-Format/axiom-stack.git"
   },
   "bugs": {
-    "url": "https://github.com/Moeabdelaziz007/axiomid-project/issues"
+    "url": "https://github.com/AIX-Format/axiom-stack/issues"
   },
   "license": "SEE LICENSE IN LICENSE",
   "keywords": [
