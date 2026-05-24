@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       data: {
         userId: user.id,
         name: name || 'My Agent',
-        status: 'inactive',
+        status: 'INACTIVE',
         apiKeyHash,
         permissions: JSON.stringify(['claim', 'verify']),
       },
