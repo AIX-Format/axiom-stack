@@ -8,13 +8,15 @@ export interface PiAuthResult {
 function getPi(): any {
   if (typeof window === "undefined") throw new Error("Pi SDK only available in browser");
   const pi = (window as any).Pi;
-  if (!pi?.authenticate) throw new Error("Pi SDK not loaded");
+  if (!pi?.init) throw new Error("Pi SDK not loaded");
   return pi;
 }
 
 export async function initPiSdk(sandbox?: boolean): Promise<void> {
   const pi = getPi();
+  if (pi.authenticate) return;
   await pi.init({ version: "2.0", sandbox: !!sandbox });
+  if (!pi.authenticate) throw new Error("Pi SDK init failed");
 }
 
 export async function authenticatePi(
@@ -22,6 +24,7 @@ export async function authenticatePi(
   onIncompletePayment?: (payment: any) => void
 ): Promise<PiAuthResult> {
   const pi = getPi();
+  if (!pi.authenticate) throw new Error("Pi SDK not initialized, call initPiSdk first");
   const auth = await pi.authenticate(
     scopes,
     onIncompletePayment ?? (() => {})

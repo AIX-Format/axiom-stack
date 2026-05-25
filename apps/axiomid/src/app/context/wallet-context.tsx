@@ -36,13 +36,14 @@ interface WalletContextType {
 
 const WalletContext = createContext<WalletContextType | null>(null);
 
-function isPiBrowser(): boolean {
+function checkPiBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
+  if (typeof window !== "undefined" && !!(window as any)?.Pi?.authenticate) return true;
   const ua = navigator.userAgent;
   return /Pi Browser|minepi/i.test(ua);
 }
 
-function isSandbox(): boolean {
+function checkSandbox(): boolean {
   if (process.env.NEXT_PUBLIC_PI_SANDBOX === "true") return true;
   if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("sandbox") === "true") return true;
   return false;
@@ -53,29 +54,42 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPiBrowser, setIsPiBrowser] = useState(false);
 
   const levelProgress = user ? getLevelProgress(user.xp, user.tier) : 0;
   const nextXP = user ? getNextLevelXP(user.tier) : null;
   const authAttempted = useRef(false);
-
-  const isPiBrowserVal = isPiBrowser();
-  const sandbox = isSandbox();
-  const shouldUsePi = isPiBrowserVal || sandbox;
 
   const connectWallet = useCallback(async () => {
     setIsConnecting(true);
     setError(null);
 
     try {
-      if (!shouldUsePi) {
-        setError("Open this app in Pi Browser");
+      const inPiBrowser = checkPiBrowser();
+      const sandbox = checkSandbox();
+      const usePi = inPiBrowser || sandbox;
+
+      if (!usePi) {
+        const storedWallet = localStorage.getItem("axiomid_wallet");
+        const walletAddress = storedWallet && storedWallet.startsWith("demo:")
+          ? storedWallet
+          : `demo:${crypto.randomUUID().slice(0, 8)}`;
+        localStorage.setItem("axiomid_wallet", walletAddress);
+
+        const res = await fetch("/api/auth/connect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ walletAddress }),
+        });
+
+        if (!res.ok) throw new Error("Demo auth failed");
+        const data = await res.json();
+        setUser(data.user);
         return;
       }
 
       await initPiSdk(sandbox);
-
       const { accessToken, user: piUser } = await authenticatePi(["username"]);
-
       const walletAddress = `pi:${piUser.uid}`;
 
       const res = await fetch("/api/auth/pi", {
@@ -95,6 +109,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       }
 
       const data = await res.json();
+      localStorage.setItem("axiomid_wallet", walletAddress);
       setUser(data.user);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Connection failed";
@@ -103,9 +118,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsConnecting(false);
     }
-  }, [shouldUsePi, sandbox]);
+  }, []);
 
   useEffect(() => {
+    const inPiBrowser = checkPiBrowser();
+    setIsPiBrowser(inPiBrowser);
     setIsLoading(false);
   }, []);
 
@@ -113,10 +130,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     if (authAttempted.current) return;
     authAttempted.current = true;
 
-    if (shouldUsePi) {
+    const inPiBrowser = checkPiBrowser();
+    const sandbox = checkSandbox();
+    const usePi = inPiBrowser || sandbox;
+
+    if (usePi) {
       connectWallet();
     }
-  }, [shouldUsePi, connectWallet]);
+  }, [connectWallet]);
 
   const claimAction = useCallback(async (actionType: string) => {
     if (!user) return false;
@@ -194,7 +215,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         isLoading,
         isConnecting,
         error,
-        isPiBrowser: isPiBrowserVal,
+        isPiBrowser,
         connectWallet,
         claimAction,
         refreshUser,
