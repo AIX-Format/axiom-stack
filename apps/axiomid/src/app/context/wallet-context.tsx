@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { Tier, getLevelProgress, getNextLevelXP } from "@/lib/tiers";
-import { initPiSdk, authenticatePi } from "@/lib/pi-sdk";
+import { connectPi, isPiSdkLoaded } from "@/lib/pi-sdk";
 
 export interface User {
   id: string;
@@ -38,15 +38,9 @@ const WalletContext = createContext<WalletContextType | null>(null);
 
 function checkPiBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
-  if (typeof window !== "undefined" && !!(window as any)?.Pi?.authenticate) return true;
+  if (isPiSdkLoaded()) return true;
   const ua = navigator.userAgent;
   return /Pi Browser|minepi/i.test(ua);
-}
-
-function checkSandbox(): boolean {
-  if (process.env.NEXT_PUBLIC_PI_SANDBOX === "true") return true;
-  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("sandbox") === "true") return true;
-  return false;
 }
 
 export function WalletProvider({ children }: { children: ReactNode }) {
@@ -66,10 +60,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     try {
       const inPiBrowser = checkPiBrowser();
-      const sandbox = checkSandbox();
-      const usePi = inPiBrowser || sandbox;
 
-      if (!usePi) {
+      if (!inPiBrowser) {
         const storedWallet = localStorage.getItem("axiomid_wallet");
         const walletAddress = storedWallet && storedWallet.startsWith("demo:")
           ? storedWallet
@@ -88,8 +80,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      await initPiSdk(sandbox);
-      const { accessToken, user: piUser } = await authenticatePi(["username"]);
+      const { accessToken, user: piUser } = await connectPi();
       const walletAddress = `pi:${piUser.uid}`;
 
       const res = await fetch("/api/auth/pi", {
@@ -131,10 +122,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     authAttempted.current = true;
 
     const inPiBrowser = checkPiBrowser();
-    const sandbox = checkSandbox();
-    const usePi = inPiBrowser || sandbox;
 
-    if (usePi) {
+    if (inPiBrowser) {
       connectWallet();
     }
   }, [connectWallet]);
