@@ -265,19 +265,19 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#060608] text-[#e5e5e5] font-sans flex relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground font-sans flex relative overflow-hidden">
       <div className="scanline" />
       <div className="bg-grid absolute inset-0 opacity-20 pointer-events-none" />
 
       {/* 1. SIDEBAR NAVIGATION */}
-      <aside className="w-64 border-r border-[#00ff41]/10 bg-black/80 backdrop-blur-xl flex flex-col justify-between p-6 z-10 hidden md:flex">
+      <aside className="w-64 border-r border-neon-green/10 bg-black/80 backdrop-blur-xl flex flex-col justify-between p-6 z-10 hidden md:flex">
         <div className="flex flex-col gap-6 text-center">
           {/* Concentric rings fingerprint logo radar */}
           <div className="relative w-28 h-28 mx-auto flex items-center justify-center group cursor-pointer">
-            <div className="absolute inset-0 rounded-full border border-[#00ff41]/20 animate-pulse" style={{ animationDuration: '4s' }} />
-            <div className="absolute inset-2 rounded-full border-2 border-dashed border-[#00ff41]/30 animate-spin-slow" />
-            <div className="absolute inset-4 rounded-full border border-[#00ff41]/50 shadow-[0_0_15px_rgba(0,255,65,0.2)] flex items-center justify-center bg-black/70">
-              <svg className="w-12 h-12 text-[#00ff41] transition-transform duration-300 group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <div className="absolute inset-0 rounded-full border border-neon-green/20 animate-pulse" style={{ animationDuration: '4s' }} />
+            <div className="absolute inset-2 rounded-full border-2 border-dashed border-neon-green/30 animate-spin-slow" />
+            <div className="absolute inset-4 rounded-full border border-neon-green/50 shadow-[0_0_15px_rgba(0,255,65,0.2)] flex items-center justify-center bg-black/70">
+              <svg className="w-12 h-12 text-neon-green transition-transform duration-300 group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
                 <path d="M12 6a6 6 0 0 1 6 6" strokeLinecap="round" />
                 <path d="M12 10a2 2 0 0 1 2 2" strokeLinecap="round" />
@@ -295,7 +295,7 @@ export default function Dashboard() {
           
           <div>
             <h1 className="font-mono text-lg font-bold tracking-tight text-white">AxiomID</h1>
-            <p className="text-[9px] font-mono text-[#00ff41]/60 tracking-widest uppercase">Agentic OS</p>
+            <p className="text-[9px] font-mono text-neon-green/60 tracking-widest uppercase">Agentic OS</p>
           </div>
 
           <nav className="flex flex-col gap-2 mt-4">
@@ -311,7 +311,7 @@ export default function Dashboard() {
                 onClick={() => item.href ? window.location.href = item.href : setActiveTab(item.id)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl font-mono text-xs text-left transition-all border ${
                   activeTab === item.id || (item.active && activeTab === "mission-control")
-                    ? "bg-[#00ff41]/10 border-[#00ff41]/30 text-white shadow-[0_0_10px_rgba(0,255,65,0.05)]"
+                    ? "bg-neon-green/10 border-neon-green/30 text-white shadow-[0_0_10px_rgba(0,255,65,0.05)]"
                     : "border-transparent text-gray-500 hover:text-white hover:bg-white/5"
                 }`}
               >
@@ -332,13 +332,13 @@ export default function Dashboard() {
       {/* MAIN CONTAINER */}
       <div className="flex-1 flex flex-col z-10 overflow-y-auto">
         {/* 2. TOP HEADER */}
-        <header className="h-20 border-b border-[#00ff41]/10 bg-black/60 backdrop-blur-xl px-6 md:px-8 flex items-center justify-between sticky top-0 z-20">
+        <header className="h-20 border-b border-neon-green/10 bg-black/60 backdrop-blur-xl px-6 md:px-8 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-4">
             <span className="font-mono text-sm font-bold tracking-tight text-white uppercase hidden md:inline">
               Mission Control
             </span>
             <div className="flex gap-2 items-center text-[10px] font-mono bg-white/5 border border-white/10 rounded-lg px-2 py-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00ff41] animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-neon-green animate-pulse" />
               <span className="text-gray-400">NETWORK:</span>
               <span className="text-white">ONLINE</span>
             </div>
@@ -350,7 +350,7 @@ export default function Dashboard() {
               <input
                 type="text"
                 placeholder="Search resources, DIDs, agent logs..."
-                className="w-64 bg-white/5 border border-white/10 rounded-xl px-9 py-2 text-xs font-mono text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff41]/40"
+                className="w-64 bg-white/5 border border-white/10 rounded-xl px-9 py-2 text-xs font-mono text-white placeholder-gray-500 focus:outline-none focus:border-neon-green/40"
               />
             </div>
 
@@ -363,9 +363,9 @@ export default function Dashboard() {
               <div className="flex items-center gap-4">
                 <div className="flex flex-col items-end">
                   <span className="text-xs font-mono text-white">{user.piUsername || "Connected User"}</span>
-                  <span className="text-[9px] font-mono text-[#00d4ff] uppercase tracking-wider">{user.tier} Tier</span>
+                  <span className="text-[9px] font-mono text-electric-blue uppercase tracking-wider">{user.tier} Tier</span>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00ff41]/20 to-[#00d4ff]/20 border border-[#00ff41]/30 flex items-center justify-center text-sm font-bold text-white shadow-[0_0_10px_rgba(0,255,65,0.1)]">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neon-green/20 to-electric-blue/20 border border-neon-green/30 flex items-center justify-center text-sm font-bold text-white shadow-[0_0_10px_rgba(0,255,65,0.1)]">
                   {user.piUsername ? user.piUsername.slice(0, 2).toUpperCase() : "AG"}
                 </div>
               </div>
@@ -376,8 +376,8 @@ export default function Dashboard() {
         {/* 3. DASHBOARD MAIN CONTENT (WITH SUB-NAV ICON STRIP) */}
         <div className="flex-1 flex overflow-hidden">
           {/* Mini vertical sub-navigation strip */}
-          <div className="hidden sm:flex border-r border-[#00ff41]/10 bg-black/40 flex-col gap-5 p-3 items-center justify-start z-10 w-16">
-            <button className="p-2.5 rounded-xl border border-[#00ff41]/20 bg-[#00ff41]/10 text-[#00ff41] shadow-[0_0_10px_rgba(0,255,65,0.2)]">
+          <div className="hidden sm:flex border-r border-neon-green/10 bg-black/40 flex-col gap-5 p-3 items-center justify-start z-10 w-16">
+            <button className="p-2.5 rounded-xl border border-neon-green/20 bg-neon-green/10 text-neon-green shadow-[0_0_10px_rgba(0,255,65,0.2)]">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
               </svg>
@@ -415,7 +415,7 @@ export default function Dashboard() {
             <div className="lg:col-span-2 flex flex-col gap-6">
               
               {/* Workspace Header Tabs (Mission Control, Home, Browsers, AI Agent, Security, Aspects) */}
-              <div className="flex items-center justify-between bg-black/40 border border-[#00ff41]/10 rounded-xl p-2">
+              <div className="flex items-center justify-between bg-black/40 border border-neon-green/10 rounded-xl p-2">
                 <div className="flex flex-wrap gap-1">
                   {["Mission Control", "Home", "Browsers", "AI Agent", "Security", "Aspects"].map((tab) => (
                     <button
@@ -423,7 +423,7 @@ export default function Dashboard() {
                       onClick={() => setActiveTab(tab.toLowerCase().replace(/ /g, "-"))}
                       className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
                         activeTab === tab.toLowerCase().replace(/ /g, "-")
-                          ? "bg-[#00ff41]/20 text-[#00ff41] border border-[#00ff41]/30 font-bold"
+                          ? "bg-neon-green/20 text-neon-green border border-neon-green/30 font-bold"
                           : "text-gray-400 hover:text-white"
                       }`}
                     >
@@ -437,12 +437,12 @@ export default function Dashboard() {
                       setLogs((prev) => [...prev, `[${new Date().toLocaleTimeString()}] SYSTEM: Re-syncing agent logs...`]);
                       refreshUser();
                     }}
-                    className="p-1.5 rounded bg-white/5 border border-white/10 hover:border-[#00ff41]/30 hover:text-[#00ff41] transition-all text-xs font-mono"
+                    className="p-1.5 rounded bg-white/5 border border-white/10 hover:border-neon-green/30 hover:text-neon-green transition-all text-xs font-mono"
                     title="Reload View"
                   >
                     ⟳
                   </button>
-                  <button className="px-3 py-1 bg-white/5 border border-white/10 hover:border-[#00ff41]/30 text-white rounded text-[10px] font-mono transition-all flex items-center gap-1">
+                  <button className="px-3 py-1 bg-white/5 border border-white/10 hover:border-neon-green/30 text-white rounded text-[10px] font-mono transition-all flex items-center gap-1">
                     AI Actions ▾
                   </button>
                 </div>
@@ -455,22 +455,22 @@ export default function Dashboard() {
                     <h2 className="text-lg font-bold text-white">AI Agents</h2>
                     <p className="text-[10px] font-mono text-gray-500">Active status and runtimes of ecosystem agents</p>
                   </div>
-                  <span className="text-xs font-mono text-[#00ff41] bg-[#00ff41]/10 px-2 py-0.5 rounded border border-[#00ff41]/20">
+                  <span className="text-xs font-mono text-neon-green bg-neon-green/10 px-2 py-0.5 rounded border border-neon-green/20">
                     2 RUNNING
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* GemClaw Agent */}
-                  <div className="glass-panel rounded-2xl border border-white/5 hover:border-[#00ff41]/20 transition-all p-5 flex flex-col gap-4 relative group">
-                    <div className="absolute top-4 right-4 flex items-center gap-1 text-[9px] font-mono text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]/30 px-2 py-0.5 rounded-full">
-                      <span className="w-1 h-1 rounded-full bg-[#00ff41] animate-pulse" />
+                  <div className="glass-panel rounded-2xl border border-white/5 hover:border-neon-green/20 transition-all p-5 flex flex-col gap-4 relative group">
+                    <div className="absolute top-4 right-4 flex items-center gap-1 text-[9px] font-mono text-neon-green bg-neon-green/10 border border-neon-green/30 px-2 py-0.5 rounded-full">
+                      <span className="w-1 h-1 rounded-full bg-neon-green animate-pulse" />
                       active
                     </div>
 
                     {/* Animated Robotic Claw SVG */}
                     <div className="w-full bg-black/40 rounded-xl border border-white/5 overflow-hidden flex items-center justify-center p-2">
-                      <svg className="w-full h-32 text-[#00ff41]" viewBox="0 0 100 60" fill="none">
+                      <svg className="w-full h-32 text-neon-green" viewBox="0 0 100 60" fill="none">
                         <path d="M10 30 L30 25 L45 28" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M10 34 L32 37 L45 32" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         <circle cx="45" cy="30" r="4" fill="#00ff41" className="animate-pulse" />
@@ -491,7 +491,7 @@ export default function Dashboard() {
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-bold text-white group-hover:text-[#00ff41] transition-colors">GemClaw</h3>
+                      <h3 className="text-sm font-bold text-white group-hover:text-neon-green transition-colors">GemClaw</h3>
                       <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
                         Voice OS Integration. Utilizes real-time audio pipeline and Silero VAD to handle natural user conversations.
                       </p>
@@ -503,15 +503,15 @@ export default function Dashboard() {
                   </div>
 
                   {/* IQRA Agent */}
-                  <div className="glass-panel rounded-2xl border border-white/5 hover:border-[#00ff41]/20 transition-all p-5 flex flex-col gap-4 relative group">
-                    <div className="absolute top-4 right-4 flex items-center gap-1 text-[9px] font-mono text-[#00ff41] bg-[#00ff41]/10 border border-[#00ff41]/30 px-2 py-0.5 rounded-full">
-                      <span className="w-1 h-1 rounded-full bg-[#00ff41] animate-pulse" />
+                  <div className="glass-panel rounded-2xl border border-white/5 hover:border-neon-green/20 transition-all p-5 flex flex-col gap-4 relative group">
+                    <div className="absolute top-4 right-4 flex items-center gap-1 text-[9px] font-mono text-neon-green bg-neon-green/10 border border-neon-green/30 px-2 py-0.5 rounded-full">
+                      <span className="w-1 h-1 rounded-full bg-neon-green animate-pulse" />
                       active
                     </div>
 
                     {/* Animated Manuscript SVG */}
                     <div className="w-full bg-black/40 rounded-xl border border-white/5 overflow-hidden flex items-center justify-center p-2">
-                      <svg className="w-full h-32 text-[#00ff41]" viewBox="0 0 100 60" fill="none">
+                      <svg className="w-full h-32 text-neon-green" viewBox="0 0 100 60" fill="none">
                         <rect x="15" y="10" width="70" height="40" rx="4" fill="rgba(9,9,11,0.8)" stroke="currentColor" strokeWidth="1" strokeDasharray="30,2,2,2" />
                         <line x1="15" y1="20" x2="85" y2="20" stroke="rgba(0, 255, 65, 0.08)" strokeWidth="0.5" />
                         <line x1="15" y1="30" x2="85" y2="30" stroke="rgba(0, 255, 65, 0.08)" strokeWidth="0.5" />
@@ -530,7 +530,7 @@ export default function Dashboard() {
                     </div>
 
                     <div>
-                      <h3 className="text-sm font-bold text-white group-hover:text-[#00ff41] transition-colors">IQRA</h3>
+                      <h3 className="text-sm font-bold text-white group-hover:text-neon-green transition-colors">IQRA</h3>
                       <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
                         Governed Memory Runtime. Evaluates intent against Damir rules and analyzes cosmic structures via MCTS.
                       </p>
@@ -553,7 +553,7 @@ export default function Dashboard() {
                       <div className="flex gap-1">
                         <div className="w-2 h-2 rounded-full bg-[#ff4444]" />
                         <div className="w-2 h-2 rounded-full bg-[#ffdd00]" />
-                        <div className="w-2 h-2 rounded-full bg-[#00ff41]" />
+                        <div className="w-2 h-2 rounded-full bg-neon-green" />
                       </div>
                       <span className="text-xs font-mono text-gray-400">console@axiomid-os</span>
                     </div>
@@ -565,7 +565,7 @@ export default function Dashboard() {
                     </button>
                   </div>
 
-                  <div className="flex-1 bg-black/80 border border-white/5 rounded-xl p-4 font-mono text-[11px] leading-relaxed overflow-y-auto max-h-[220px] shadow-inner text-[#00ff41]/90">
+                  <div className="flex-1 bg-black/80 border border-white/5 rounded-xl p-4 font-mono text-[11px] leading-relaxed overflow-y-auto max-h-[220px] shadow-inner text-neon-green/90">
                     <div className="flex flex-col gap-1.5">
                       {logs.map((log, i) => (
                         <div key={i} className="whitespace-pre-wrap">
@@ -577,13 +577,13 @@ export default function Dashboard() {
                   </div>
 
                   <form onSubmit={handleCommandSubmit} className="flex gap-2 mt-3">
-                    <span className="font-mono text-xs text-[#00ff41] py-2">{">"}</span>
+                    <span className="font-mono text-xs text-neon-green py-2">{">"}</span>
                     <input
                       type="text"
                       value={terminalInput}
                       onChange={(e) => setTerminalInput(e.target.value)}
                       placeholder="Command (help, status, did, memory, mcp)..."
-                      className="flex-1 bg-white/5 border border-white/5 focus:border-[#00ff41]/30 rounded-xl px-4 py-2 text-xs font-mono text-white focus:outline-none"
+                      className="flex-1 bg-white/5 border border-white/5 focus:border-neon-green/30 rounded-xl px-4 py-2 text-xs font-mono text-white focus:outline-none"
                     />
                   </form>
                 </div>
@@ -592,9 +592,9 @@ export default function Dashboard() {
                 <div className="bento-card p-6 flex flex-col gap-4">
                   <div className="flex items-center justify-between border-b border-white/5 pb-3">
                     <h3 className="text-sm font-bold text-white font-mono uppercase tracking-wider flex items-center gap-2">
-                      <span className="text-[#00ff41]">⟐</span> MCP Connection Hub
+                      <span className="text-neon-green">⟐</span> MCP Connection Hub
                     </h3>
-                    <span className="text-[9px] font-mono text-[#00ff41] bg-[#00ff41]/10 px-2 py-0.5 rounded border border-[#00ff41]/20">
+                    <span className="text-[9px] font-mono text-neon-green bg-neon-green/10 px-2 py-0.5 rounded border border-neon-green/20">
                       4 ALIVE
                     </span>
                   </div>
@@ -606,7 +606,7 @@ export default function Dashboard() {
                       { name: "Firebase MCP", schemas: "28 tools", status: "active", icon: "🔥" },
                       { name: "Sequential Thinking", schemas: "1 tool", status: "active", icon: "🧠" }
                     ].map((server) => (
-                      <div key={server.name} className="glass-panel p-3 rounded-xl border border-white/5 flex items-center justify-between hover:border-[#00ff41]/20 transition-all">
+                      <div key={server.name} className="glass-panel p-3 rounded-xl border border-white/5 flex items-center justify-between hover:border-neon-green/20 transition-all">
                         <div className="flex items-center gap-2.5">
                           <span className="text-base">{server.icon}</span>
                           <div>
@@ -615,7 +615,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#00ff41] animate-pulse" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-neon-green animate-pulse" />
                           <span className="text-[9px] font-mono text-gray-400 uppercase">ONLINE</span>
                         </div>
                       </div>
@@ -631,9 +631,9 @@ export default function Dashboard() {
             <div className="flex flex-col gap-6">
               
               {/* KYC Progress Card */}
-              <div className="bento-card p-6 bg-gradient-to-br from-[#00ff41]/5 to-transparent flex flex-col gap-4">
+              <div className="bento-card p-6 bg-gradient-to-br from-neon-green/5 to-transparent flex flex-col gap-4">
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-mono text-[#00d4ff] uppercase tracking-wider">KYC Validation level</span>
+                  <span className="text-[10px] font-mono text-electric-blue uppercase tracking-wider">KYC Validation level</span>
                   <h3 className="text-2xl font-bold text-white font-mono tracking-wide">
                     {user ? user.tier.toUpperCase() : "ANONYMOUS"}
                   </h3>
@@ -641,7 +641,7 @@ export default function Dashboard() {
 
                 <div className="w-full bg-white/5 border border-white/10 h-2 rounded-full overflow-hidden relative">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-[#00ff41] to-[#00d4ff] shadow-[0_0_10px_#00ff41]"
+                    className="h-full bg-gradient-to-r from-neon-green to-electric-blue shadow-[0_0_10px_#00ff41]"
                     initial={{ width: 0 }}
                     animate={{ width: `${user ? levelProgress : 0}%` }}
                     transition={{ duration: 1 }}
@@ -662,7 +662,7 @@ export default function Dashboard() {
                 </div>
 
                 {agentActionStatus && (
-                  <div className="bg-[#00ff41]/10 border border-[#00ff41]/30 rounded-xl p-2.5 text-xs font-mono text-[#00ff41] animate-pulse">
+                  <div className="bg-neon-green/10 border border-neon-green/30 rounded-xl p-2.5 text-xs font-mono text-neon-green animate-pulse">
                     {agentActionStatus}
                   </div>
                 )}
@@ -675,7 +675,7 @@ export default function Dashboard() {
                           <span className="text-xs font-bold text-white">{user.agent.name}</span>
                           <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full ${
                             user.agent.status === "active" 
-                              ? "bg-[#00ff41]/10 text-[#00ff41] border border-[#00ff41]/20" 
+                              ? "bg-neon-green/10 text-neon-green border border-neon-green/20" 
                               : "bg-white/5 text-gray-400 border border-white/10"
                           }`}>
                             {user.agent.status.toUpperCase()}
@@ -691,7 +691,7 @@ export default function Dashboard() {
 
                       <button 
                         onClick={handleToggleAgentState}
-                        className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-[#00ff41]/30 hover:bg-[#00ff41]/10 hover:text-[#00ff41] text-xs font-mono text-white transition-all text-center"
+                        className="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-neon-green/30 hover:bg-neon-green/10 hover:text-neon-green text-xs font-mono text-white transition-all text-center"
                       >
                         {user.agent.status === "active" ? "■ PAUSE RUNTIME" : "▶ ACTIVATE RUNTIME"}
                       </button>
@@ -732,7 +732,7 @@ export default function Dashboard() {
                       onClick={() => setMarketplaceTab("skills")}
                       className={`flex-1 text-center py-1.5 rounded-lg transition-all ${
                         marketplaceTab === "skills"
-                          ? "bg-[#00ff41]/20 text-[#00ff41] border border-[#00ff41]/30 font-bold"
+                          ? "bg-neon-green/20 text-neon-green border border-neon-green/30 font-bold"
                           : "text-gray-400 hover:text-white"
                       }`}
                     >
@@ -742,7 +742,7 @@ export default function Dashboard() {
                       onClick={() => setMarketplaceTab("personas")}
                       className={`flex-1 text-center py-1.5 rounded-lg transition-all ${
                         marketplaceTab === "personas"
-                          ? "bg-[#00ff41]/20 text-[#00ff41] border border-[#00ff41]/30 font-bold"
+                          ? "bg-neon-green/20 text-neon-green border border-neon-green/30 font-bold"
                           : "text-gray-400 hover:text-white"
                       }`}
                     >
@@ -752,7 +752,7 @@ export default function Dashboard() {
                 </div>
 
                 {purchaseStatus && (
-                  <div className="bg-[#00ff41]/10 border border-[#00ff41]/30 rounded-xl p-3 text-xs font-mono text-[#00ff41] animate-pulse">
+                  <div className="bg-neon-green/10 border border-neon-green/30 rounded-xl p-3 text-xs font-mono text-neon-green animate-pulse">
                     {purchaseStatus}
                   </div>
                 )}
@@ -778,16 +778,16 @@ export default function Dashboard() {
                       return (
                         <div
                           key={skill.name}
-                          className="glass-panel p-4 rounded-xl border border-white/5 hover:border-[#00ff41]/20 transition-all flex flex-col gap-2 relative group"
+                          className="glass-panel p-4 rounded-xl border border-white/5 hover:border-neon-green/20 transition-all flex flex-col gap-2 relative group"
                         >
                           <div className="flex justify-between items-start">
                             <div className="flex items-center gap-2">
                               <span className="text-lg">{icon}</span>
-                              <h4 className="text-xs font-bold text-white group-hover:text-[#00ff41] transition-colors capitalize text-left">
+                              <h4 className="text-xs font-bold text-white group-hover:text-neon-green transition-colors capitalize text-left">
                                 {skill.name.replace(/-/g, ' ')}
                               </h4>
                             </div>
-                            <span className="text-xs font-mono text-[#fbbf24]">{pricePi}</span>
+                            <span className="text-xs font-mono text-axiom-gold">{pricePi}</span>
                           </div>
                           <p className="text-[10px] text-gray-500 leading-normal text-left">{skill.description}</p>
                           <div className="flex justify-between items-center mt-2 pt-2 border-t border-white/5">
@@ -801,7 +801,7 @@ export default function Dashboard() {
                                 icon,
                                 description: skill.description
                               })}
-                              className="px-3 py-1 rounded bg-[#00ff41]/10 border border-[#00ff41]/30 hover:bg-[#00ff41] hover:text-black font-mono text-[9px] text-[#00ff41] transition-all"
+                              className="px-3 py-1 rounded bg-neon-green/10 border border-neon-green/30 hover:bg-neon-green hover:text-black font-mono text-[9px] text-neon-green transition-all"
                             >
                               FORGE
                             </button>
@@ -829,20 +829,20 @@ export default function Dashboard() {
                       return (
                         <div
                           key={persona.name}
-                          className="glass-panel p-4 rounded-xl border border-white/5 hover:border-[#00ff41]/20 transition-all flex flex-col gap-2 relative group"
+                          className="glass-panel p-4 rounded-xl border border-white/5 hover:border-neon-green/20 transition-all flex flex-col gap-2 relative group"
                         >
                           <div className="flex justify-between items-start">
                             <div className="flex items-center gap-2">
                               <span className="text-lg">{icon}</span>
-                              <h4 className="text-xs font-bold text-white group-hover:text-[#00ff41] transition-colors text-left">
+                              <h4 className="text-xs font-bold text-white group-hover:text-neon-green transition-colors text-left">
                                 {persona.display_name.ar}
                               </h4>
                             </div>
-                            <span className="text-xs font-mono text-[#fbbf24]">{pricePi}</span>
+                            <span className="text-xs font-mono text-axiom-gold">{pricePi}</span>
                           </div>
                           <div className="flex justify-between text-[8px] font-mono text-gray-500">
                             <span>{persona.display_name.en}</span>
-                            <span className="text-[#00d4ff] uppercase">TIER: {persona.tier}</span>
+                            <span className="text-electric-blue uppercase">TIER: {persona.tier}</span>
                           </div>
                           <p className="text-[10px] text-gray-400 leading-normal text-right mt-1">
                             {persona.description}
@@ -858,7 +858,7 @@ export default function Dashboard() {
                                 icon,
                                 description: persona.description
                               })}
-                              className="px-3 py-1 rounded bg-[#00ff41]/10 border border-[#00ff41]/30 hover:bg-[#00ff41] hover:text-black font-mono text-[9px] text-[#00ff41] transition-all"
+                              className="px-3 py-1 rounded bg-neon-green/10 border border-neon-green/30 hover:bg-neon-green hover:text-black font-mono text-[9px] text-neon-green transition-all"
                             >
                               ACTIVATE
                             </button>
