@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { WalletProvider } from "./context/wallet-context";
 
@@ -114,7 +113,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white min-h-screen overflow-x-hidden`}
       >
-        <Script src="https://sdk.minepi.com/pi-sdk.js" strategy="beforeInteractive" />
         <WalletProvider>
             {children}
         </WalletProvider>
