@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     if (existing) {
       const updated = await prisma.userAgent.update({
         where: { userId: user.id },
-        data: { name: name || existing.name, status: 'active', lastActive: new Date() },
+        data: { name: name || existing.name, status: 'ACTIVE', lastActive: new Date() },
         select: agentSelect,
       });
 
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
       data: {
         userId: user.id,
         name: name || 'My Agent',
-        status: 'active',
+        status: 'ACTIVE',
         apiKeyHash,
         permissions: JSON.stringify(['claim', 'verify']),
         lastActive: new Date(),

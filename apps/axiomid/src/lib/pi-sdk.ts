@@ -1,175 +1,258 @@
-let _parentProxy: Window | null = null;
+const CDN_URL = "https://sdk.minepi.com/pi-sdk.js";
 
-function makeParentProxy(target: Window): Window {
-  if (!_parentProxy) {
-    _parentProxy = new Proxy(target, {
-      get(t, prop, receiver) {
-        if (prop === "postMessage") {
-          return function (
-            message: unknown,
-            targetOrigin: string,
-            ...rest: [] | [Transferable[]]
-          ) {
-            if (
-              typeof targetOrigin === "string" &&
-              (targetOrigin === "https://sandbox.minepi.com" || targetOrigin === "https://app-cdn.minepi.com")
-            ) {
-              return t.postMessage(message, "*", ...rest);
-            }
-            return t.postMessage(message, targetOrigin, ...rest);
-          };
-        }
-        // Avoid using receiver for cross-origin targets to prevent SecurityError
+export interface PiAuthResult {
+  accessToken: string;
+  user: { uid: string; username: string; name: string };
+}
+
+type LogFn = (msg: string) => void;
+
+function getWindowPi(): any {
+  if (typeof window === "undefined") return null;
+  return (window as any).Pi;
+}
+
+export function isPiSdkLoaded(): boolean {
+  if (typeof window === "undefined") return false;
+  const Pi = getWindowPi();
+  return !!(Pi?.authenticate);
+}
+
+function loadCdnScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${CDN_URL}"]`)) {
+      resolve();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = CDN_URL;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Pi SDK CDN script"));
+    document.head.appendChild(script);
+  });
+}
+
+export async function ensurePiSdk(onLog?: LogFn): Promise<any> {
+  onLog?.("[PI-SDK] 🔍 Checking Pi SDK availability...");
+
+  let Pi = getWindowPi();
+  if (Pi?.authenticate) {
+    onLog?.("[PI-SDK] ✅ window.Pi موجود (من الساندبوكس أو Pi Browser)");
+    return Pi;
+  }
+
+  onLog?.("[PI-SDK] ⏳ window.Pi غير موجود. جاري تحميل CDN script...");
+  await loadCdnScript();
+  onLog?.("[PI-SDK] ✅ CDN script تم تحميله");
+
+  Pi = getWindowPi();
+  if (!Pi?.authenticate) {
+    onLog?.("[PI-SDK] ❌ window.Pi لا يزال غير متاح بعد تحميل CDN");
+    throw new Error("Pi SDK failed to initialize after loading CDN script");
+  }
+  onLog?.("[PI-SDK] ✅ window.Pi جاهز");
+  return Pi;
+}
+
+export async function connectPi(onLog?: LogFn): Promise<PiAuthResult> {
+  if (typeof window === "undefined") {
+    throw new Error("Pi SDK only works in browser");
+  }
+
+  const Pi = await ensurePiSdk(onLog);
+
+  if (typeof Pi.init === "function") {
+    onLog?.("[PI-SDK] 🔄 Calling Pi.init({ version: \"2.0\" })...");
+    await Pi.init({ version: "2.0" });
+    onLog?.("[PI-SDK] ✅ Pi.init() completed");
+  } else {
+    onLog?.("[PI-SDK] ⏩ Pi.init() غير متاح — الساندبوكس يدير init بنفسه");
+  }
+
+  onLog?.("[PI-SDK] 🔄 Calling Pi.authenticate(['payments', 'username'])...");
+  let authResult: any;
+  try {
+    authResult = await Pi.authenticate(
+      ["payments", "username"],
+      (payment: any) => {
+        onLog?.(`[PI-SDK] ⚠️ Incomplete payment found: ${payment?.identifier}`);
+      },
+    );
+  } catch (err: any) {
+    onLog?.(`[PI-SDK] ❌ Pi.authenticate() failed: ${err?.message || err}`);
+    throw new Error(`Pi authentication failed: ${err?.message || err}`);
+  }
+
+  onLog?.("[PI-SDK] ✅ Pi.authenticate() succeeded!");
+
+  if (!authResult?.accessToken || !authResult?.user?.uid) {
+    onLog?.("[PI-SDK] ❌ Auth result missing accessToken or user");
+    throw new Error("Pi authentication returned incomplete result");
+  }
+
+  const uid = authResult.user.uid;
+  const username = authResult.user.username || uid;
+
+  onLog?.(`[PI-SDK] 👤 User: ${username} (UID: ${uid})`);
+  onLog?.(`[PI-SDK] 🔑 Access token: ${authResult.accessToken.slice(0, 20)}...`);
+  onLog?.("[PI-SDK] ✅ Wallet authentication complete!");
+
+  return {
+    accessToken: authResult.accessToken,
+    user: { uid, username, name: username },
+  };
+}
+
+export async function runWalletTest(onLog: LogFn): Promise<void> {
+  onLog?.("[WALLET-TEST] ====== بدء اختبار المحفظة ======");
+  onLog?.(`[WALLET-TEST] 📅 ${new Date().toLocaleString()}`);
+  onLog?.("[WALLET-TEST] 📋 البيئة: " + (typeof window !== "undefined" ? window.location.href : "SSR"));
+
+  onLog?.("[WALLET-TEST] 🔍 1/7 التحقق من تحميل Pi SDK...");
+  if (typeof window === "undefined") {
+    onLog?.("[WALLET-TEST] ❌ ليس في المتصفح");
+    return;
+  }
+
+  const Pi = getWindowPi();
+  onLog?.(`[WALLET-TEST]    window.Pi: ${Pi ? "موجود ✅" : "غير موجود ❌"}`);
+  onLog?.(`[WALLET-TEST]    window.Pi.init: ${typeof Pi?.init === "function" ? "موجود ✅" : "غير موجود ❌"}`);
+  onLog?.(`[WALLET-TEST]    window.Pi.authenticate: ${typeof Pi?.authenticate === "function" ? "موجود ✅" : "غير موجود ❌"}`);
+  onLog?.(`[WALLET-TEST]    window.Pi.createPayment: ${typeof Pi?.createPayment === "function" ? "موجود ✅" : "غير موجود ❌"}`);
+
+  const isIframe = typeof window !== "undefined" && window.self !== window.top;
+  const isSandboxDetected = Pi?.sandboxMode || isIframe;
+  onLog?.("[WALLET-TEST] 2/7 البيئة:");
+  onLog?.(`    NEXT_PUBLIC_PI_SANDBOX: ${process.env.NEXT_PUBLIC_PI_SANDBOX || "غير معرف"}`);
+  onLog?.(`    داخل iframe: ${isIframe ? "نعم ✅" : "لا"}`);
+  onLog?.(`    Sandbox detected: ${isSandboxDetected ? "نعم ✅" : "لا"}`);
+
+  if (isIframe) {
+    onLog?.("[WALLET-TEST]    origin: " + window.location.origin);
+    try {
+      onLog?.("[WALLET-TEST]    parent origin: " + (document.referrer || "لا يوجد"));
+    } catch {}
+  }
+
+  try {
+    await ensurePiSdk(onLog);
+  } catch (err: any) {
+    onLog?.(`[WALLET-TEST] ❌ فشل تحميل Pi SDK: ${err?.message || err}`);
+    return;
+  }
+
+  const piReady = getWindowPi();
+  if (!piReady?.authenticate) {
+    onLog?.("[WALLET-TEST] ❌ Pi SDK غير متاح بعد المحاولة.");
+    return;
+  }
+
+  onLog?.("[WALLET-TEST] 3/7 الاتصال بـ Pi.init()...");
+  try {
+    if (typeof piReady.init === "function") {
+      await piReady.init({ version: "2.0" });
+      onLog?.("[WALLET-TEST] ✅ Pi.init() نجح");
+    } else {
+      onLog?.("[WALLET-TEST] ⏩ Pi.init() غير متاح، ننتقل للخطوة التالية");
+    }
+  } catch (err: any) {
+    onLog?.(`[WALLET-TEST] ❌ Pi.init() فشل: ${err?.message || err}`);
+    return;
+  }
+
+  onLog?.("[WALLET-TEST] 4/7 محاولة المصادقة عبر Pi.authenticate()...");
+  let authResult: any;
+  try {
+    authResult = await piReady.authenticate(["payments", "username"], (payment: any) => {
+      onLog?.(`[WALLET-TEST] ⚠️ دفعة غير مكتملة: ${payment?.identifier}`);
+    });
+    onLog?.("[WALLET-TEST] ✅ Pi.authenticate() نجح!");
+  } catch (err: any) {
+    onLog?.(`[WALLET-TEST] ❌ Pi.authenticate() فشل: ${err?.message || err}`);
+    onLog?.("[WALLET-TEST]    تحقق من أنك في Pi Browser أو Pi Sandbox");
+    return;
+  }
+
+  const uid = authResult?.user?.uid || "غير معروف";
+  const username = authResult?.user?.username || uid;
+  const token = authResult?.accessToken || "";
+
+  onLog?.("[WALLET-TEST] 5/7 بيانات المستخدم:");
+  onLog?.(`    UID: ${uid}`);
+  onLog?.(`    اسم المستخدم: ${username}`);
+  onLog?.(`    Stellar Wallet: ${authResult?.user?.wallet_address || "غير معروف"}`);
+  onLog?.(`    Access Token: ${token.slice(0, 30)}...`);
+
+  onLog?.("[WALLET-TEST] ====== ✅ انتهى الاختبار بنجاح ======");
+}
+
+export interface PiPayment {
+  identifier: string;
+  amount: number;
+  memo: string;
+  status: 'pending' | 'completed' | 'failed';
+  fromAddress: string;
+  toAddress: string;
+  createdAt: string;
+}
+
+export async function createPiPayment(amount: number, memo: string, metadata?: Record<string, unknown>): Promise<PiPayment> {
+  const Pi = await ensurePiSdk();
+
+  return new Promise<PiPayment>((resolve, reject) => {
+    Pi.createPayment({
+      amount,
+      memo,
+      metadata: metadata || {},
+    }, {
+      onReadyForServerApproval: async (paymentId: string) => {
         try {
-          const value = (t as any)[prop];
-          if (typeof value === "function") {
-            return value.bind(t);
-          }
-          return value;
-        } catch {
-          return Reflect.get(t, prop);
+          const res = await fetch('/api/pi/payment/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId })
+          });
+          if (!res.ok) throw new Error('Failed to approve payment with backend');
+          console.log('[Pi Payment] Payment approved on backend:', paymentId);
+        } catch (err) {
+          console.error('[Pi Payment] Error in onReadyForServerApproval:', err);
+          reject(err);
         }
       },
-    });
-  }
-  return _parentProxy;
-}
-
-let _origPostMessage: typeof window.postMessage | null = null;
-
-function patchPostMessageForSandbox(): void {
-  if (typeof window === "undefined") return;
-
-  // Strategy 1: Override window.postMessage directly.
-  // Window.prototype.postMessage is {writable: true, configurable: false},
-  // so assignment creates an own property on window that shadows the
-  // prototype.  Works when window.parent === window (top-level page with
-  // no extension override) because window.parent.postMessage resolves to
-  // window.postMessage at call time.
-  try {
-    _origPostMessage = window.postMessage.bind(window);
-    (window as any).postMessage = function (
-      message: unknown,
-      targetOrigin: string,
-      ...rest: [] | [Transferable[]]
-    ) {
-      if (
-        typeof targetOrigin === "string" &&
-        (targetOrigin === "https://sandbox.minepi.com" || targetOrigin === "https://app-cdn.minepi.com")
-      ) {
-        return _origPostMessage!(message, "*", ...rest);
-      }
-      return _origPostMessage!(message, targetOrigin, ...rest);
-    };
-    return;
-  } catch {
-    // Fall through
-  }
-
-  // Strategy 2: Override window.parent at the instance level.
-  // Used when assignment to window.postMessage is blocked (unlikely) or
-  // when the extension has defined window.parent as an own property that
-  // returns a non-window object.
-  const desc = Object.getOwnPropertyDescriptor(Window.prototype, "parent");
-  const origGet = desc?.get;
-  if (!origGet) return;
-
-  try {
-    const own = Object.getOwnPropertyDescriptor(window, "parent");
-    if (!own || own.configurable) {
-      Object.defineProperty(window, "parent", {
-        get() {
-          const parent = origGet.call(this);
-          if (!parent) return parent;
-          return makeParentProxy(parent as Window);
-        },
-        configurable: true,
-        enumerable: true,
-      });
-      return;
-    }
-  } catch {
-    // Fall through
-  }
-
-  // Strategy 3: Prototype-level override (last resort).
-  if (!desc?.configurable) return;
-  Object.defineProperty(Window.prototype, "parent", {
-    get() {
-      const parent = origGet.call(this);
-      if (!parent) return parent;
-      return makeParentProxy(parent as Window);
-    },
-    configurable: true,
-  });
-}
-
-function injectPiSdkScript(sandbox?: boolean): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    // Append query parameter to force browser to load a clean script context in sandbox mode
-    script.src = sandbox 
-      ? "https://sdk.minepi.com/pi-sdk.js?env=sandbox" 
-      : "https://sdk.minepi.com/pi-sdk.js";
-    script.async = true;
-    if (sandbox) {
-      script.setAttribute("data-sandbox", "true");
-    }
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load Pi SDK"));
-    document.body.appendChild(script);
-  });
-}
-
-async function loadFromCdnWithRetry(sandbox?: boolean): Promise<void> {
-  for (let attempt = 0; attempt < 3; attempt++) {
-    await injectPiSdkScript(sandbox);
-    if ((window as any)?.Pi?.authenticate) {
-      try {
-        (window as any).Pi.init({ version: "2.0", sandbox: !!sandbox });
-      } catch {
-        // init may already have been called; safe to ignore
-      }
-      return;
-    }
-    await new Promise((r) => setTimeout(r, 300));
-  }
-  throw new Error("Pi SDK failed to load after 3 attempts");
-}
-
-export function ensurePiSdk(sandbox?: boolean): Promise<void> {
-  if (typeof window === "undefined") {
-    return Promise.reject(new Error("Not in browser"));
-  }
-
-  if (sandbox) {
-    patchPostMessageForSandbox();
-    // If sandbox mode is requested, check if the pre-existing script tag has data-sandbox="true".
-    // If it doesn't, it was loaded in production mode by the parent window. We must remove it
-    // and delete window.Pi to force a clean sandbox-mode script reload.
-    const existingScript = document.querySelector('script[src*="pi-sdk.js"]');
-    const isSandboxScript = existingScript?.getAttribute("data-sandbox") === "true";
-
-    if ((window as any)?.Pi && !isSandboxScript) {
-      console.log("[Pi SDK] Deleting pre-existing production SDK to force sandbox reload...");
-      try {
-        delete (window as any).Pi;
-        if (existingScript) {
-          existingScript.remove();
+      onReadyForServerCompletion: async (paymentId: string, txid: string) => {
+        try {
+          const res = await fetch('/api/pi/payment/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId, txid })
+          });
+          if (!res.ok) throw new Error('Failed to complete payment with backend');
+          const data = await res.json();
+          console.log('[Pi Payment] Payment completed successfully:', data);
+          
+          resolve({
+            identifier: paymentId,
+            amount,
+            memo,
+            status: 'completed',
+            fromAddress: '',
+            toAddress: '',
+            createdAt: new Date().toISOString(),
+          });
+        } catch (err) {
+          console.error('[Pi Payment] Error in onReadyForServerCompletion:', err);
+          reject(err);
         }
-      } catch (e) {
-        console.warn("[Pi SDK] Failed to clear pre-existing SDK:", e);
+      },
+      onCancel: (paymentId: string) => {
+        console.warn('[Pi Payment] Payment cancelled by user:', paymentId);
+        reject(new Error('Payment cancelled by user'));
+      },
+      onError: (error: Error, payment?: any) => {
+        console.error('[Pi Payment] Payment error:', error, payment);
+        reject(error || new Error('Payment error occurred'));
       }
-    }
-  }
-
-  if ((window as any)?.Pi?.authenticate) {
-    try {
-      (window as any).Pi.init({ version: "2.0", sandbox: !!sandbox });
-    } catch {
-      // init may already have been called; safe to ignore
-    }
-    return Promise.resolve();
-  }
-  return loadFromCdnWithRetry(sandbox);
+    });
+  });
 }

@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     const agent = await prisma.userAgent.update({
       where: { userId: user.id },
       data: {
-        status: 'active',
+        status: 'ACTIVE',
         lastActive: new Date(),
       },
       select: {

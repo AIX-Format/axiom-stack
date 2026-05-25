@@ -1,4 +1,4 @@
-export type AgentStatus = 'inactive' | 'active' | 'paused';
+export type AgentStatus = 'INACTIVE' | 'ACTIVE' | 'PAUSED' | 'SLEEPING';
 
 export interface AgentState {
   id: string;

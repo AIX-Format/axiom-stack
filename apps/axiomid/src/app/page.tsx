@@ -279,7 +279,7 @@ export default function Home() {
             {user && (
               <div className="mt-4 text-center">
                 <span className="text-[10px] font-mono text-gray-400 uppercase block">Verification Level</span>
-                <span className="text-sm font-bold text-[#00ff41] font-mono">{user.tier.toUpperCase()}</span>
+                <span className="text-sm font-bold text-neon-green font-mono">{user.tier.toUpperCase()}</span>
               </div>
             )}
         </BentoCard>
