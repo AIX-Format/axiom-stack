@@ -39,12 +39,12 @@ export async function connectPiWallet(): Promise<PiAuthResult> {
     ? ['username', 'payments']
     : ['username', 'payments', 'wallet_address'];
 
-  const result = await Pi.authenticate({
-    scope: scopes,
-    onIncompletePaymentFound: (payment: any) => {
+  const result = await Pi.authenticate(
+    scopes,
+    (payment: any) => {
       console.warn('Incomplete Pi payment found:', payment.identifier);
     }
-  });
+  );
 
   return {
     accessToken: result.accessToken,
