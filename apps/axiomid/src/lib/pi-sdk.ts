@@ -19,7 +19,7 @@ function patchPostMessage(): void {
   } catch {}
 }
 
-let initPromise: Promise<void> | null = null;
+let cached: Promise<void> | null = null;
 
 export function ensurePiSdk(sandbox?: boolean): Promise<void> {
   if (typeof window === "undefined") {
@@ -28,22 +28,22 @@ export function ensurePiSdk(sandbox?: boolean): Promise<void> {
 
   if (sandbox) patchPostMessage();
 
-  if (initPromise) return initPromise;
+  if (cached) return cached as Promise<void>;
 
   const pi = (window as any)?.Pi;
 
   if (pi?.authenticate) {
-    initPromise = Promise.resolve();
-    return initPromise;
+    cached = Promise.resolve();
+    return cached as Promise<void>;
   }
 
   if (pi?.init) {
-    initPromise = pi.init({ version: "2.0", sandbox: !!sandbox })
-      .then(() => {}).catch(() => {});
-    return initPromise;
+    cached = pi.init({ version: "2.0", sandbox: !!sandbox })
+      .then(() => undefined).catch(() => undefined);
+    return cached as Promise<void>;
   }
 
-  initPromise = new Promise<void>((resolve) => {
+  cached = new Promise<void>((resolve) => {
     const script = document.createElement("script");
     script.src = "https://sdk.minepi.com/pi-sdk.js";
     script.async = true;
@@ -57,7 +57,7 @@ export function ensurePiSdk(sandbox?: boolean): Promise<void> {
               if ((window as any)?.Pi?.authenticate) resolve();
               else setTimeout(wait, 300);
             })
-            .catch(resolve);
+            .catch(() => resolve());
         } else if (p?.authenticate) {
           resolve();
         } else {
@@ -73,5 +73,5 @@ export function ensurePiSdk(sandbox?: boolean): Promise<void> {
     document.head.appendChild(script);
   });
 
-  return initPromise;
+  return cached as Promise<void>;
 }
