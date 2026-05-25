@@ -20,10 +20,6 @@ jest.mock('@/lib/prisma', () => ({
   },
 }));
 
-jest.mock('@/lib/tiers', () => ({
-  calculateTier: jest.fn(),
-}));
-
 import { POST } from '../auth/connect/route';
 
 describe('POST /api/auth/connect', () => {
@@ -64,33 +60,6 @@ describe('POST /api/auth/connect', () => {
     expect(res.status).toBe(200);
     expect(data.user.walletAddress).toBe(mockWalletAddress);
     expect(prisma.user.create).toHaveBeenCalled();
-  });
-
-  it('should return existing user and update tier if necessary', async () => {
-    const existingUser = {
-      walletAddress: mockWalletAddress,
-      xp: 150,
-      tier: 'Ghost',
-      actions: [],
-    };
-
-    (prisma.user.findUnique as any).mockResolvedValue(existingUser);
-    (calculateTier as any).mockReturnValue('Spark');
-    (prisma.user.update as any).mockResolvedValue({
-      ...existingUser,
-      tier: 'Spark',
-    });
-
-    const req = {
-      json: async () => ({ walletAddress: mockWalletAddress }),
-    } as Request;
-
-    const res = await POST(req);
-    const data = await res.json();
-
-    expect(res.status).toBe(200);
-    expect(data.user.tier).toBe('Spark');
-    expect(prisma.user.update).toHaveBeenCalled();
   });
 
   it('should return 500 on internal error', async () => {

@@ -1,77 +1,33 @@
-function patchPostMessage(): void {
-  if (typeof window === "undefined") return;
-  try {
-    const orig = window.postMessage.bind(window);
-    (window as any).postMessage = function (
-      message: unknown,
-      targetOrigin: string,
-      ...rest: [] | [Transferable[]]
-    ) {
-      if (
-        typeof targetOrigin === "string" &&
-        (targetOrigin === "https://sandbox.minepi.com" ||
-          targetOrigin === "https://app-cdn.minepi.com")
-      ) {
-        return orig(message, "*", ...rest);
-      }
-      return orig(message, targetOrigin, ...rest);
-    };
-  } catch {}
+export type PiScope = "username" | "payments" | "wallet_address";
+
+export interface PiAuthResult {
+  accessToken: string;
+  user: { uid: string; username: string };
 }
 
-let cached: Promise<void> | null = null;
+function getPi(): any {
+  if (typeof window === "undefined") throw new Error("Pi SDK only available in browser");
+  const pi = (window as any).Pi;
+  if (!pi?.authenticate) throw new Error("Pi SDK not loaded");
+  return pi;
+}
 
-export function ensurePiSdk(sandbox?: boolean): Promise<void> {
-  if (typeof window === "undefined") {
-    return Promise.reject(new Error("Not in browser"));
-  }
+export async function initPiSdk(sandbox?: boolean): Promise<void> {
+  const pi = getPi();
+  await pi.init({ version: "2.0", sandbox: !!sandbox });
+}
 
-  if (sandbox) patchPostMessage();
-
-  if (cached) return cached as Promise<void>;
-
-  const pi = (window as any)?.Pi;
-
-  if (pi?.authenticate) {
-    cached = Promise.resolve();
-    return cached as Promise<void>;
-  }
-
-  if (pi?.init) {
-    cached = pi.init({ version: "2.0", sandbox: !!sandbox })
-      .then(() => undefined).catch(() => undefined);
-    return cached as Promise<void>;
-  }
-
-  cached = new Promise<void>((resolve) => {
-    const script = document.createElement("script");
-    script.src = "https://sdk.minepi.com/pi-sdk.js";
-    script.async = true;
-    if (sandbox) script.setAttribute("data-sandbox", "true");
-    script.onload = () => {
-      const wait = () => {
-        const p = (window as any)?.Pi;
-        if (p?.init) {
-          p.init({ version: "2.0", sandbox: !!sandbox })
-            .then(() => {
-              if ((window as any)?.Pi?.authenticate) resolve();
-              else setTimeout(wait, 300);
-            })
-            .catch(() => resolve());
-        } else if (p?.authenticate) {
-          resolve();
-        } else {
-          setTimeout(wait, 300);
-        }
-      };
-      wait();
-    };
-    script.onerror = () => {
-      console.error("Failed to load Pi SDK");
-      resolve();
-    };
-    document.head.appendChild(script);
-  });
-
-  return cached as Promise<void>;
+export async function authenticatePi(
+  scopes: PiScope[],
+  onIncompletePayment?: (payment: any) => void
+): Promise<PiAuthResult> {
+  const pi = getPi();
+  const auth = await pi.authenticate(
+    scopes,
+    onIncompletePayment ?? (() => {})
+  );
+  return {
+    accessToken: auth.accessToken,
+    user: { uid: auth.user.uid, username: auth.user.username },
+  };
 }
