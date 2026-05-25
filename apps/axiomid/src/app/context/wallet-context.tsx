@@ -106,7 +106,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       debug("inIframe", inIframe);
       debug("hasPi", typeof window !== "undefined" && !!window.Pi);
 
-      const usePi = inPiBrowser || (isSandbox && inIframe);
+      const usePi = inPiBrowser || isSandbox;
       debug("usePi", usePi);
 
       if (usePi) {
@@ -188,7 +188,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const inPiBrowser = detectPiBrowser();
     const isSandbox = getSandboxFlag();
     const inIframe = typeof window !== "undefined" && window.self !== window.parent;
-    const isPiEnv = inPiBrowser || (isSandbox && inIframe);
+    const isPiEnv = inPiBrowser || isSandbox;
     console.log("[AUTH DEBUG] auto-auth: SANDBOX=", isSandbox, "PiBrowser=", inPiBrowser, "inIframe=", inIframe, "isPiEnv=", isPiEnv);
 
     if (isPiEnv) {
