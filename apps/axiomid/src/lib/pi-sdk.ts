@@ -124,13 +124,15 @@ function injectPiSdkScript(sandbox?: boolean): Promise<void> {
 async function loadFromCdnWithRetry(sandbox?: boolean): Promise<void> {
   for (let attempt = 0; attempt < 3; attempt++) {
     await injectPiSdkScript(sandbox);
-    if ((window as any)?.Pi?.authenticate) {
+    if ((window as any)?.Pi?.init) {
       try {
         (window as any).Pi.init({ version: "2.0", sandbox: !!sandbox });
       } catch {
         // init may already have been called; safe to ignore
       }
-      return;
+      if ((window as any)?.Pi?.authenticate) {
+        return;
+      }
     }
     await new Promise((r) => setTimeout(r, 300));
   }
