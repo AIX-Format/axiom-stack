@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { Tier, getLevelProgress, getNextLevelXP } from "@/lib/tiers";
-import { connectPi, isPiSdkLoaded } from "@/lib/pi-sdk";
+import { connectPi, runWalletTest, isPiSdkLoaded } from "@/lib/pi-sdk";
 
 export interface User {
   id: string;
@@ -32,6 +32,9 @@ interface WalletContextType {
   activateAgent: () => Promise<boolean>;
   levelProgress: number;
   nextXP: number | null;
+  walletLogs: string[];
+  runWalletTest: () => Promise<void>;
+  clearWalletLogs: () => void;
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
@@ -39,6 +42,15 @@ const WalletContext = createContext<WalletContextType | null>(null);
 function checkPiBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
   if (isPiSdkLoaded()) return true;
+  if (process.env.NEXT_PUBLIC_PI_SANDBOX === "true") return true;
+  
+  try {
+    if (window.self !== window.top) return true;
+  } catch (e) {
+    // Cross-origin iframe check might throw, meaning we are in an iframe
+    return true; 
+  }
+  
   const ua = navigator.userAgent;
   return /Pi Browser|minepi/i.test(ua);
 }
@@ -53,20 +65,31 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const levelProgress = user ? getLevelProgress(user.xp, user.tier) : 0;
   const nextXP = user ? getNextLevelXP(user.tier) : null;
   const authAttempted = useRef(false);
+  const [walletLogs, setWalletLogs] = useState<string[]>([]);
+
+  const pushLog = useCallback((msg: string) => {
+    setWalletLogs((prev) => [...prev, `[${new Date().toLocaleTimeString()}] ${msg}`]);
+  }, []);
+
+  const clearWalletLogs = useCallback(() => setWalletLogs([]), []);
 
   const connectWallet = useCallback(async () => {
     setIsConnecting(true);
     setError(null);
+    pushLog("بدء الاتصال بالمحفظة...");
 
     try {
       const inPiBrowser = checkPiBrowser();
+      pushLog(`حالة Pi Browser: ${inPiBrowser ? "نعم ✅" : "لا"}`);
 
       if (!inPiBrowser) {
+        pushLog("وضع التجربة (non-Pi browser)...");
         const storedWallet = localStorage.getItem("axiomid_wallet");
         const walletAddress = storedWallet && storedWallet.startsWith("demo:")
           ? storedWallet
           : `demo:${crypto.randomUUID().slice(0, 8)}`;
         localStorage.setItem("axiomid_wallet", walletAddress);
+        pushLog(`محفظة مؤقتة: ${walletAddress}`);
 
         const res = await fetch("/api/auth/connect", {
           method: "POST",
@@ -76,13 +99,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
         if (!res.ok) throw new Error("Demo auth failed");
         const data = await res.json();
+        pushLog(`تم تسجيل الدخول بنجاح ✅`);
         setUser(data.user);
         return;
       }
 
-      const { accessToken, user: piUser } = await connectPi();
+      pushLog("جاري التوثيق عبر Pi SDK...");
+      const { accessToken, user: piUser } = await connectPi(pushLog);
       const walletAddress = `pi:${piUser.uid}`;
+      pushLog(`عنوان المحفظة: ${walletAddress}`);
 
+      pushLog("جاري التحقق من صحة التوثيق مع السيرفر...");
       const res = await fetch("/api/auth/pi", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -102,14 +129,26 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const data = await res.json();
       localStorage.setItem("axiomid_wallet", walletAddress);
       setUser(data.user);
+      pushLog(`✅ تم توثيق المحفظة بنجاح!`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Connection failed";
       console.error("Auth error:", message);
+      pushLog(`❌ خطأ: ${message}`);
       setError(message);
     } finally {
       setIsConnecting(false);
     }
-  }, []);
+  }, [pushLog]);
+
+  const runTest = useCallback(async () => {
+    clearWalletLogs();
+    pushLog("🚀 بدء اختبار المحفظة الشامل...");
+    try {
+      await runWalletTest(pushLog);
+    } catch (err: any) {
+      pushLog(`❌ خطأ غير متوقع: ${err?.message || err}`);
+    }
+  }, [pushLog, clearWalletLogs]);
 
   useEffect(() => {
     const inPiBrowser = checkPiBrowser();
@@ -198,25 +237,33 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, [user, refreshUser]);
 
   return (
-    <WalletContext.Provider
-      value={{
-        user,
-        isLoading,
-        isConnecting,
-        error,
-        isPiBrowser,
-        connectWallet,
-        claimAction,
-        refreshUser,
-        createAgent,
-        activateAgent,
-        levelProgress,
-        nextXP,
-      }}
-    >
+      <WalletContext.Provider
+        value={{
+          user,
+          isLoading,
+          isConnecting,
+          error,
+          isPiBrowser,
+          connectWallet,
+          claimAction,
+          refreshUser,
+          createAgent,
+          activateAgent,
+          levelProgress,
+          nextXP,
+          walletLogs,
+          runWalletTest: runTest,
+          clearWalletLogs,
+        }}
+      >
       {children}
     </WalletContext.Provider>
   );
+}
+
+export function useWalletLogs(): string[] {
+  const ctx = useContext(WalletContext);
+  return ctx?.walletLogs ?? [];
 }
 
 export function useWallet() {

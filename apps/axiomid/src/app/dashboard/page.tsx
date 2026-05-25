@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useWallet } from "../context/wallet-context";
-import { createPiPayment } from "@/lib/pi-wallet";
+import { createPiPayment } from "@/lib/pi-sdk";
 import Link from "next/link";
 import skillsData from "@/data/skills.json";
 import personasData from "@/data/personas.json";
@@ -39,7 +39,10 @@ export default function Dashboard() {
     isPiBrowser,
     createAgent,
     activateAgent,
-    refreshUser
+    refreshUser,
+    runWalletTest,
+    walletLogs,
+    clearWalletLogs
   } = useWallet();
 
   const [logs, setLogs] = useState<string[]>(INITIAL_LOGS);
@@ -71,6 +74,16 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
+  // Pipe wallet logs to terminal as they come in
+  const prevLogsLength = useRef(0);
+  useEffect(() => {
+    if (walletLogs.length > prevLogsLength.current) {
+      const newLogs = walletLogs.slice(prevLogsLength.current);
+      setLogs((prev) => [...prev, ...newLogs]);
+      prevLogsLength.current = walletLogs.length;
+    }
+  }, [walletLogs]);
+
   // Scroll terminal to bottom
   useEffect(() => {
     terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -94,7 +107,7 @@ export default function Dashboard() {
     let response = "";
 
     if (cmd === "help") {
-      response = "Available commands: status, did, balance, skills, personas, memory, conscience, mcp, clear, ping";
+      response = "Available commands: status, did, balance, skills, personas, memory, conscience, mcp, wallet-test, wallet-logs, clear, ping";
       setLogs((prev) => [...prev, `[SYSTEM] ${response}`]);
     } else if (cmd === "status") {
       response = `Agentic OS v1.0.0. User: ${user?.piUsername || "anonymous"}. Tier: ${user?.tier || "None"}. Agent: ${user?.agent ? user.agent.name : "None"}. Status: active.`;
@@ -108,6 +121,21 @@ export default function Dashboard() {
     } else if (cmd === "ping") {
       response = "pong. latency: 12ms. resonance: 369hz.";
       setLogs((prev) => [...prev, `[SYSTEM] ${response}`]);
+    } else if (cmd === "wallet-test") {
+      prevLogsLength.current = 0;
+      clearWalletLogs();
+      setLogs((prev) => [...prev, "[SYSTEM] 🚀 تشغيل اختبار المحفظة الشامل..."]);
+      runWalletTest();
+    } else if (cmd === "wallet-logs") {
+      if (walletLogs.length === 0) {
+        setLogs((prev) => [...prev, "[SYSTEM] لا توجد سجلات. استخدم 'wallet-test' أولاً."]);
+      } else {
+        setLogs((prev) => [...prev, `[SYSTEM] === سجلات اختبار المحفظة (${walletLogs.length}) ===`]);
+        for (const log of walletLogs) {
+          setLogs((prev) => [...prev, log]);
+        }
+        setLogs((prev) => [...prev, "[SYSTEM] === انتهت السجلات ==="]);
+      }
     } else if (cmd === "mcp") {
       setLogs((prev) => [
         ...prev,
