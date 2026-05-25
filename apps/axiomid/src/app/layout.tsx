@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { WalletProvider } from "./context/wallet-context";
+import { SandboxProvider } from "./context/sandbox-provider";
 
 // Preload fonts for better performance
 const geistSans = Geist({
@@ -115,9 +116,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white min-h-screen overflow-x-hidden`}
       >
         <Script src="https://sdk.minepi.com/pi-sdk.js" strategy="beforeInteractive" />
-        <WalletProvider>
+        <SandboxProvider>
+          <WalletProvider>
             {children}
-        </WalletProvider>
+          </WalletProvider>
+        </SandboxProvider>
         <script
           dangerouslySetInnerHTML={{
             __html: `

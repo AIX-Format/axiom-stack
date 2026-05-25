@@ -15,7 +15,12 @@ export function getPiSdk(): PiSdkBase {
 
 function shouldUseSandbox(): boolean {
   if (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_PI_SANDBOX === "true") return true;
-  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("sandbox") === "true") return true;
+  if (typeof window !== "undefined") {
+    if (new URLSearchParams(window.location.search).get("sandbox") === "true") return true;
+    try {
+      if (window.self !== window.top && document.referrer.includes("sandbox.minepi.com")) return true;
+    } catch {}
+  }
   return false;
 }
 
