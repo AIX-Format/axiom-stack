@@ -50,6 +50,7 @@ const AUTH_TIMEOUT_MS = 15000;
 
 function detectPiBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
+  if (typeof window !== "undefined" && !!(window as any)?.Pi?.authenticate) return true;
   return /Pi Browser|minepi/i.test(navigator.userAgent);
 }
 
@@ -123,7 +124,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         debug("scopes requested:", scopes);
         const auth = (await withTimeout(
           pi.authenticate({
-            scope: scopes,
+            scopes,
             onIncompletePaymentFound: (payment: any) => {
               console.warn("Incomplete payment:", payment?.identifier);
             }
